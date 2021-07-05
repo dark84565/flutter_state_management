@@ -1,13 +1,25 @@
+import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
-import 'CounterBLoC.dart';
 
-class BLoCExample extends StatefulWidget {
-  @override
-  _BLoCExampleState createState() => _BLoCExampleState();
+class CounterModel {
+  BehaviorSubject _counter = BehaviorSubject.seeded(0);
+  //initial 0, 暫存
+
+  get stream$ => _counter.stream;
+
+  int get current => _counter.value;
+
+  increment() {
+    _counter.add(current + 1);
+  }
+
+  decrement() {
+    _counter.add(current - 1);
+  }
 }
 
-class _BLoCExampleState extends State<BLoCExample> {
-  final _bloc = CounterBloc();
+class BLoCRxDart extends StatelessWidget {
+  final counterModel = CounterModel();
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +28,11 @@ class _BLoCExampleState extends State<BLoCExample> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('You have pushed the button this many times:'),
+            Text(
+              'You have pushed the button this many times:',
+            ),
             StreamBuilder(
-                stream: _bloc.counter,
-                initialData: 0,
+                stream: counterModel.stream$,
                 builder: (context, snapshot) {
                   return Text('${snapshot.data}');
                 })
@@ -31,8 +44,9 @@ class _BLoCExampleState extends State<BLoCExample> {
         children: [
           FloatingActionButton(
             heroTag: 'btn1',
-            onPressed: ()=> _bloc.counterEventSink.add(IncrementEvent()),
-            tooltip: 'Increment',
+            onPressed: () {
+              counterModel.increment();
+            },
             child: Icon(Icons.add),
           ),
           SizedBox(
@@ -40,18 +54,13 @@ class _BLoCExampleState extends State<BLoCExample> {
           ),
           FloatingActionButton(
             heroTag: 'btn2',
-            onPressed: ()=> _bloc.counterEventSink.add(DecrementEvent()),
-            tooltip: 'Decrement',
+            onPressed: () {
+              counterModel.decrement();
+            },
             child: Icon(Icons.remove),
-          ),
+          )
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _bloc.dispose();
   }
 }
